@@ -1,5 +1,35 @@
-//import * as E from './universal/mathFunctions';
-//import { Point, Circle } from './universal/universalElements';
+// * ***********************************************************************
+// *
+// *  POSTPROCESSING CLASS
+// *
+// *  Post effects for THREE.js
+// *************************************************************************
+class Postprocessing {
+  constructor(renderer, scene, camera) {
+    this.renderer = renderer;
+    this.scene = scene;
+    this.camera = camera;
+    if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+    const renderPass = new THREE.RenderPass(scene, camera);
+    const copyPass = new THREE.ShaderPass(THREE.CopyShader);
+    copyPass.renderToScreen = true;
+
+    this.composer = new THREE.EffectComposer(renderer);
+    this.composer.addPass(renderPass);
+
+    this.effects();
+
+    this.composer.addPass(copyPass);
+    return this.composer;
+  }
+
+  effects() {
+    const testPass = new THREE.ShaderPass( THREE.ColorifyShader );
+		//testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
+    this.composer.addPass(testPass);
+  }
+}
 
 // * ***********************************************************************
 // *
@@ -12,9 +42,13 @@ export class Renderer {
     this.scene = new THREE.Scene();
     this.initCamera();
     this.initRenderer(renderElem);
+    this.postRenderer = new Postprocessing(this.renderer, this.scene, this.camera);
+
     this.showStats();
     this.resize();
     this.setupDOMEvents();
+
+    console.log(this.postRenderer);
   }
 
   add(mesh) {
@@ -139,56 +173,6 @@ export class Renderer {
   render() {
     window.requestAnimationFrame(() => this.render());
     if (this.stats) this.stats.update();
-    this.renderer.render(this.scene, this.camera);
+    this.postRenderer.render();
   }
 }
-
-/* UNUSED FUNCTIONS
-  createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
-    if (wireframe === undefined) wireframe = false;
-    if (color === undefined) color = 0xffffff;
-    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
-  }
-
-
-  segment(circle, startAngle, endAngle, color) {
-    if (color === undefined) color = 0xffffff;
-
-    const curve = new THREE.EllipseCurve(
-      circle.centre.x * this.radius,
-      circle.centre.y * this.radius,
-      circle.radius * this.radius,
-      circle.radius * this.radius, // xRadius, yRadius
-      startAngle, endAngle,
-      false // aClockwise
-    );
-
-    const points = curve.getSpacedPoints(100);
-
-    const path = new THREE.Path();
-    const geometry = path.createGeometry(points);
-
-    const material = new THREE.LineBasicMaterial({
-      color: color
-    });
-    const s = new THREE.Line(geometry, material);
-
-    this.scene.add(s);
-  }
-
-  line(start, end, color) {
-    if (color === undefined) color = 0xffffff;
-
-    const geometry = new THREE.Geometry();
-
-    geometry.vertices.push(
-      new THREE.Vector3(start.x * this.radius, start.y * this.radius, 0),
-      new THREE.Vector3(end.x * this.radius, end.y * this.radius, 0)
-    );
-    const material = new THREE.LineBasicMaterial({
-      color: color
-    });
-    const l = new THREE.Line(geometry, material);
-    this.scene.add(l);
-  }
-*/

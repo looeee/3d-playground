@@ -32,8 +32,43 @@ babelHelpers.possibleConstructorReturn = function (self, call) {
 
 babelHelpers;
 
-//import * as E from './universal/mathFunctions';
-//import { Point, Circle } from './universal/universalElements';
+// * ***********************************************************************
+// *
+// *  POSTPROCESSING CLASS
+// *
+// *  Post effects for THREE.js
+// *************************************************************************
+
+var Postprocessing = function () {
+  function Postprocessing(renderer, scene, camera) {
+    babelHelpers.classCallCheck(this, Postprocessing);
+
+    this.renderer = renderer;
+    this.scene = scene;
+    this.camera = camera;
+    if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+    var renderPass = new THREE.RenderPass(scene, camera);
+    var copyPass = new THREE.ShaderPass(THREE.CopyShader);
+    copyPass.renderToScreen = true;
+
+    this.composer = new THREE.EffectComposer(renderer);
+    this.composer.addPass(renderPass);
+
+    this.effects();
+
+    this.composer.addPass(copyPass);
+    return this.composer;
+  }
+
+  Postprocessing.prototype.effects = function effects() {
+    var testPass = new THREE.ShaderPass(THREE.ColorifyShader);
+    //testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
+    this.composer.addPass(testPass);
+  };
+
+  return Postprocessing;
+}();
 
 // * ***********************************************************************
 // *
@@ -41,6 +76,8 @@ babelHelpers;
 // *
 // *  Controller for THREE.js
 // *************************************************************************
+
+
 var Renderer = function () {
   function Renderer(renderElem) {
     babelHelpers.classCallCheck(this, Renderer);
@@ -48,9 +85,13 @@ var Renderer = function () {
     this.scene = new THREE.Scene();
     this.initCamera();
     this.initRenderer(renderElem);
+    this.postRenderer = new Postprocessing(this.renderer, this.scene, this.camera);
+
     this.showStats();
     this.resize();
     this.setupDOMEvents();
+
+    console.log(this.postRenderer);
   }
 
   Renderer.prototype.add = function add(mesh) {
@@ -190,61 +231,11 @@ var Renderer = function () {
       return _this2.render();
     });
     if (this.stats) this.stats.update();
-    this.renderer.render(this.scene, this.camera);
+    this.postRenderer.render();
   };
 
   return Renderer;
 }();
-
-/* UNUSED FUNCTIONS
-  createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
-    if (wireframe === undefined) wireframe = false;
-    if (color === undefined) color = 0xffffff;
-    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
-  }
-
-
-  segment(circle, startAngle, endAngle, color) {
-    if (color === undefined) color = 0xffffff;
-
-    const curve = new THREE.EllipseCurve(
-      circle.centre.x * this.radius,
-      circle.centre.y * this.radius,
-      circle.radius * this.radius,
-      circle.radius * this.radius, // xRadius, yRadius
-      startAngle, endAngle,
-      false // aClockwise
-    );
-
-    const points = curve.getSpacedPoints(100);
-
-    const path = new THREE.Path();
-    const geometry = path.createGeometry(points);
-
-    const material = new THREE.LineBasicMaterial({
-      color: color
-    });
-    const s = new THREE.Line(geometry, material);
-
-    this.scene.add(s);
-  }
-
-  line(start, end, color) {
-    if (color === undefined) color = 0xffffff;
-
-    const geometry = new THREE.Geometry();
-
-    geometry.vertices.push(
-      new THREE.Vector3(start.x * this.radius, start.y * this.radius, 0),
-      new THREE.Vector3(end.x * this.radius, end.y * this.radius, 0)
-    );
-    const material = new THREE.LineBasicMaterial({
-      color: color
-    });
-    const l = new THREE.Line(geometry, material);
-    this.scene.add(l);
-  }
-*/
 
 // * ***********************************************************************
 // *
