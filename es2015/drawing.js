@@ -1,4 +1,8 @@
-import { randomFloat, randomInt } from './universal/mathFunctions';
+import {
+  randomFloat,
+  randomInt
+}
+from './universal/mathFunctions';
 //import { Point, Circle } from './universal/universalElements';
 import {
   Arc,
@@ -18,7 +22,6 @@ from './objects';
 // *  (100,100) top right
 // *
 // *************************************************************************
-
 export class Drawing {
   constructor(renderer) {
     this.renderer = renderer;
@@ -41,16 +44,21 @@ export class Drawing {
   }
 
   test() {
-    const callback = (elem) => {
+    const mouseoverCallback = (elem) => {
       elem.intersect.object.material.color = new THREE.Color(randomInt(0x612f60, 0xffffff));
       elem.intersect.object.material.needsUpdate = true;
+    };
+
+    const clickCallback = (elem) => {
+      console.log('click!');
     };
 
     for (let i = 0; i < 12; i++) {
       const testSegment = new Segment({
         outerRadius: 40,
         innerRadius: 25,
-        width: Math.PI / 6, //in radians
+        innerWidth: Math.PI / 6, //in radians
+        outerWidth: Math.PI / 6.2, //in radians
         offset: i * Math.PI / 6, //in radians
         color: randomInt(0x612f60, 0xffffff),
       });
@@ -59,9 +67,16 @@ export class Drawing {
       this.renderer.domEvents.addEventListener(
         testSegment,
         'mouseover',
-        callback,
+        mouseoverCallback,
         false
-       );
+      );
+
+      this.renderer.domEvents.addEventListener(
+        testSegment,
+        'click',
+        clickCallback,
+        false
+      );
     }
   }
 }

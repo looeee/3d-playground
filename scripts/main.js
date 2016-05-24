@@ -351,7 +351,8 @@ var Objects = function Objects(spec) {
 // spec = {
 //   outerRadius,
 //   innerRadius,
-//   width, //in radians
+//   innerWidth, //in radians
+//   outerWidth
 //   offset, //in radians
 //   material,
 //   color,
@@ -380,7 +381,7 @@ var Segment = function (_Objects) {
   };
 
   Segment.prototype.buildShape = function buildShape() {
-    var endAngle = this.spec.offset + this.spec.width;
+    var endAngle = this.spec.offset + this.spec.innerWidth;
     var x1 = Math.cos(this.spec.offset) * this.spec.innerRadius;
     var y1 = Math.sin(this.spec.offset) * this.spec.innerRadius;
     var x2 = Math.cos(this.spec.offset) * this.spec.outerRadius;
@@ -394,7 +395,7 @@ var Segment = function (_Objects) {
     this.shape.absarc(0, 0, //centre
     this.spec.outerRadius, //radius
     this.spec.offset, //startAngle
-    endAngle, //endAngle
+    this.spec.offset + this.spec.outerWidth, //endAngle
     true //clockwise
     );
     this.shape.lineTo(x3, y3);
@@ -483,7 +484,6 @@ var Arc = function (_Objects3) {
 // *  (100,100) top right
 // *
 // *************************************************************************
-
 var Drawing = function () {
   function Drawing(renderer) {
     babelHelpers.classCallCheck(this, Drawing);
@@ -506,22 +506,29 @@ var Drawing = function () {
   };
 
   Drawing.prototype.test = function test() {
-    var callback = function (elem) {
+    var mouseoverCallback = function (elem) {
       elem.intersect.object.material.color = new THREE.Color(randomInt(0x612f60, 0xffffff));
       elem.intersect.object.material.needsUpdate = true;
+    };
+
+    var clickCallback = function (elem) {
+      console.log('click!');
     };
 
     for (var i = 0; i < 12; i++) {
       var testSegment = new Segment({
         outerRadius: 40,
         innerRadius: 25,
-        width: Math.PI / 6, //in radians
+        innerWidth: Math.PI / 6, //in radians
+        outerWidth: Math.PI / 6.2, //in radians
         offset: i * Math.PI / 6, //in radians
         color: randomInt(0x612f60, 0xffffff)
       });
       this.renderer.add(testSegment);
 
-      this.renderer.domEvents.addEventListener(testSegment, 'mouseover', callback, false);
+      this.renderer.domEvents.addEventListener(testSegment, 'mouseover', mouseoverCallback, false);
+
+      this.renderer.domEvents.addEventListener(testSegment, 'click', clickCallback, false);
     }
   };
 

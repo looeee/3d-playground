@@ -25,7 +25,8 @@ class Objects {
 // spec = {
 //   outerRadius,
 //   innerRadius,
-//   width, //in radians
+//   innerWidth, //in radians
+//   outerWidth
 //   offset, //in radians
 //   material,
 //   color,
@@ -45,7 +46,7 @@ export class Segment extends Objects {
   }
 
   buildShape() {
-    const endAngle = this.spec.offset + this.spec.width;
+    const endAngle = this.spec.offset + this.spec.innerWidth;
     const x1 = Math.cos(this.spec.offset) * this.spec.innerRadius;
     const y1 = Math.sin(this.spec.offset) * this.spec.innerRadius;
     const x2 = Math.cos(this.spec.offset) * this.spec.outerRadius;
@@ -60,7 +61,7 @@ export class Segment extends Objects {
       0, 0, //centre
       this.spec.outerRadius, //radius
       this.spec.offset, //startAngle
-      endAngle, //endAngle
+      this.spec.offset + this.spec.outerWidth, //endAngle
       true //clockwise
     );
     this.shape.lineTo(x3, y3);
