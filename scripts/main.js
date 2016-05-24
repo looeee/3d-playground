@@ -6,10 +6,35 @@ babelHelpers.classCallCheck = function (instance, Constructor) {
   }
 };
 
+babelHelpers.inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+babelHelpers.possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
 babelHelpers;
 
 //import * as E from './universal/mathFunctions';
 //import { Point, Circle } from './universal/universalElements';
+
 // * ***********************************************************************
 // *
 // *  RENDERER CLASS
@@ -24,7 +49,12 @@ var Renderer = function () {
     this.initCamera();
     this.initRenderer(renderElem);
     this.showStats();
+    this.resize();
   }
+
+  Renderer.prototype.add = function add(mesh) {
+    this.scene.add(mesh);
+  };
 
   Renderer.prototype.reset = function reset() {
     this.clearScene();
@@ -32,6 +62,21 @@ var Renderer = function () {
     this.setCamera();
     this.setRenderer();
   };
+
+  Renderer.prototype.resize = function resize() {
+    var _this = this;
+
+    window.addEventListener('resize', function () {
+      //this.clearScene();
+      _this.renderer.setSize(window.innerWidth, window.innerHeight);
+      //this.camera.aspect	= window.innerWidth / window.innerHeight;
+      _this.setCamera();
+      //this.camera.updateProjectionMatrix();
+    }, false);
+  };
+
+  //clear all meshes from the scene, but preserve camera/renderer
+
 
   Renderer.prototype.clearScene = function clearScene() {
     for (var i = this.scene.children.length - 1; i >= 0; i--) {
@@ -77,32 +122,6 @@ var Renderer = function () {
   Renderer.prototype.setRenderer = function setRenderer() {
     this.renderer.setClearColor(0x000000, 1.0);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-  };
-
-  Renderer.prototype.disk = function disk(circle, color) {
-    if (color === undefined) color = 0xffffff;
-    var geometry = new THREE.CircleGeometry(circle.radius, 100, 0, 2 * Math.PI);
-    var material = new THREE.MeshBasicMaterial({ color: color });
-
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.x = circle.centre.x;
-    mesh.position.y = circle.centre.y;
-
-    this.scene.add(mesh);
-  };
-
-  //NOTE: some polygons are inverted due to vertex order,
-  //solved this by making material doubles sided
-
-
-  Renderer.prototype.createMesh = function createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
-    if (wireframe === undefined) wireframe = false;
-    if (color === undefined) color = 0xffffff;
-
-    if (!this.pattern) {
-      this.createPattern(color, textures, wireframe, elem);
-    }
-    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
   };
 
   //render to image elem
@@ -157,11 +176,7 @@ var Renderer = function () {
   };
 
   Renderer.prototype.render = function render() {
-    var _this = this;
-
-    window.requestAnimationFrame(function () {
-      return _this.render();
-    });
+    //window.requestAnimationFrame(() => this.render());
     if (this.stats) this.stats.update();
     this.renderer.render(this.scene, this.camera);
   };
@@ -170,6 +185,11 @@ var Renderer = function () {
 }();
 
 /* UNUSED FUNCTIONS
+  createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
+    if (wireframe === undefined) wireframe = false;
+    if (color === undefined) color = 0xffffff;
+    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
+  }
 
 
   segment(circle, startAngle, endAngle, color) {
@@ -282,96 +302,206 @@ var LayoutController = function () {
   return LayoutController;
 }();
 
-// * ***********************************************************************
-// *
-// *   POINT CLASS
-// *   Represents a 2D or 3D point with functions to apply transforms and
-// *   convert between hyperbolid space and the Poincare disk
-// *************************************************************************
-
-var Point = function () {
-  function Point(x, y) {
-    var z = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
-    babelHelpers.classCallCheck(this, Point);
-
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-
-  //compare two points taking rounding errors into account
-
-
-  Point.prototype.compare = function compare(otherPoint) {
-    if (typeof otherPoint === 'undefined') {
-      console.warn('Compare Points: point not defined.');
-      return false;
-    }
-    var a = toFixed(this.x) === toFixed(otherPoint.x);
-    var b = toFixed(this.y) === toFixed(otherPoint.y);
-    var c = toFixed(this.z) === toFixed(otherPoint.z);
-    if (a && b && c) return true;
-    return false;
-  };
-
-  Point.prototype.clone = function clone() {
-    return new Point(this.x, this.y);
-  };
-
-  return Point;
-}();
-
-// * ***********************************************************************
-// *
-// *   CIRCLE CLASS
-// *   A circle in the Poincare disk is identical to a circle in Euclidean space
-// *
-// *************************************************************************
-
-var Circle = function () {
-  function Circle(centre, radius) {
-    babelHelpers.classCallCheck(this, Circle);
-
-    this.centre = centre;
-    this.radius = radius;
-  }
-
-  Circle.prototype.compare = function compare(otherCircle) {
-    if (typeof otherCircle === 'undefined') {
-      console.warn('Compare Circles: circle not defined.');
-      return false;
-    }
-    var a = this.centre.compare(otherCircle.centre);
-    var b = toFixed(this.radius) === toFixed(otherCircle.radius);
-    if (a && b) return true;
-    return false;
-  };
-
-  Circle.prototype.clone = function clone() {
-    return new Circle(this.centre, this.radius);
-  };
-
-  return Circle;
-}();
-
-// * ***********************************************************************
-// *
-// *   MATH FUNCTIONS
-// *
-// *************************************************************************
-
-//.toFixed returns a string for some no doubt very good reason.
-//apply to fixed with default value of 10 and return as a float
-var toFixed = function (number) {
-  var places = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
-  return parseFloat(number.toFixed(places));
+var randomInt = function (min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 };
+
+//The following three functions convert values from percentages starting at
+//(0,0) bottom left to (100,100) top right screen coords
+var xPercent = window.innerWidth / 100;
+var yPercent = window.innerHeight / 100;
+var xCoord = function (x) {
+  return x < 50 ? (-50 + x) * xPercent : (x - 50) * xPercent;
+};
+//Lengths are calculated from a percentage of screen width
+//or height depending on which is smaller. This means that
+//objects assigned a length of 100 (or circles radius 50)
+//will never be drawn off screen
+var length = function (len) {
+  return xPercent < yPercent ? len * xPercent : len * yPercent;
+};
+
+// * ***********************************************************************
+// *
+// *  OBJECTS SUPERCLASS
+// *
+// *************************************************************************
+
+var Objects = function () {
+  function Objects(spec) {
+    babelHelpers.classCallCheck(this, Objects);
+
+    spec.color = spec.color || 0xffffff;
+    this.spec = spec;
+    this.setPosition();
+  }
+
+  Objects.prototype.setPosition = function setPosition() {
+    if (this.spec.x) this.spec.x = xCoord(this.spec.x);
+    if (this.spec.y) this.spec.y = xCoord(this.spec.y);
+  };
+
+  Objects.prototype.createMeshMaterial = function createMeshMaterial() {
+    return new THREE.MeshBasicMaterial({
+      color: this.spec.color
+    });
+  };
+
+  Objects.prototype.createLineMaterial = function createLineMaterial() {
+    return new THREE.LineBasicMaterial({
+      color: this.spec.color
+    });
+  };
+
+  Objects.prototype.createMesh = function createMesh(x, y, geometry, material) {
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.x = x;
+    mesh.position.y = y;
+    return mesh;
+  };
+
+  return Objects;
+}();
+
+// * ***********************************************************************
+// *
+// *  SEGMENT CLASS
+// *
+// *************************************************************************
+// spec = {
+//   outerRadius,
+//   innerRadius,
+//   width, //in radians
+//   offset, //in radians
+//   material,
+//   color,
+// }
+
+
+var Segment = function (_Objects) {
+  babelHelpers.inherits(Segment, _Objects);
+
+  function Segment(spec) {
+    var _ret;
+
+    babelHelpers.classCallCheck(this, Segment);
+
+    var _this = babelHelpers.possibleConstructorReturn(this, _Objects.call(this, spec));
+
+    _this.spec = spec;
+    _this.setup();
+    return _ret = new THREE.Mesh(_this.geometry, new THREE.MeshBasicMaterial({ color: _this.spec.color })), babelHelpers.possibleConstructorReturn(_this, _ret);
+  }
+
+  Segment.prototype.setup = function setup() {
+    this.spec.outerRadius = length(this.spec.outerRadius);
+    this.spec.innerRadius = length(this.spec.innerRadius);
+    this.buildShape();
+    this.buildGeometry();
+  };
+
+  Segment.prototype.buildShape = function buildShape() {
+    var endAngle = this.spec.offset + this.spec.width;
+    var x1 = Math.cos(this.spec.offset) * this.spec.innerRadius;
+    var y1 = Math.sin(this.spec.offset) * this.spec.innerRadius;
+    var x2 = Math.cos(this.spec.offset) * this.spec.outerRadius;
+    var y2 = Math.sin(this.spec.offset) * this.spec.outerRadius;
+    var x3 = Math.cos(endAngle) * this.spec.innerRadius;
+    var y3 = Math.sin(endAngle) * this.spec.innerRadius;
+
+    this.shape = new THREE.Shape();
+    this.shape.moveTo(x1, y1);
+    this.shape.lineTo(x2, y2);
+    this.shape.absarc(0, 0, //centre
+    this.spec.outerRadius, //radius
+    this.spec.offset, //startAngle
+    endAngle, //endAngle
+    true //clockwise
+    );
+    this.shape.lineTo(x3, y3);
+
+    //this arc is going in the opposite direction so start/endAngle swapped
+    this.shape.absarc(0, 0, //centre
+    this.spec.innerRadius, //radius
+    endAngle, this.spec.offset, true //clockwise
+    );
+  };
+
+  Segment.prototype.buildGeometry = function buildGeometry() {
+    this.geometry = new THREE.ShapeGeometry(this.shape);
+  };
+
+  return Segment;
+}(Objects);
+
+// * ***********************************************************************
+// *
+// *  DISK CLASS
+// *
+// *************************************************************************
+// spec = {
+//   radius,
+//   color,
+//   x,
+//   y
+// }
+var Disk = function (_Objects2) {
+  babelHelpers.inherits(Disk, _Objects2);
+
+  function Disk(spec) {
+    var _ret2;
+
+    babelHelpers.classCallCheck(this, Disk);
+
+    var _this2 = babelHelpers.possibleConstructorReturn(this, _Objects2.call(this, spec));
+
+    _this2.spec.radius = length(_this2.spec.radius);
+    var geometry = new THREE.CircleGeometry(_this2.spec.radius, 100, 0, 2 * Math.PI);
+    var material = _this2.createMeshMaterial(_this2.spec.color);
+    return _ret2 = _this2.createMesh(_this2.spec.x, _this2.spec.y, geometry, material), babelHelpers.possibleConstructorReturn(_this2, _ret2);
+  }
+
+  return Disk;
+}(Objects);
+// * ***********************************************************************
+// *
+// *  ARC CLASS
+// *
+// *************************************************************************
+var Arc = function (_Objects3) {
+  babelHelpers.inherits(Arc, _Objects3);
+
+  function Arc(spec) {
+    var _ret3;
+
+    babelHelpers.classCallCheck(this, Arc);
+
+    var _this3 = babelHelpers.possibleConstructorReturn(this, _Objects3.call(this, spec));
+
+    _this3.spec.rotation = _this3.spec.rotation || 0;
+    _this3.spec.clockwise = _this3.spec.rotation || false;
+    _this3.spec.points = _this3.spec.points || 50;
+
+    var material = _this3.createLineMaterial(_this3.spec.color);
+    var curve = new THREE.EllipseCurve(_this3.spec.x, _this3.spec.y, _this3.spec.xRadius, _this3.spec.yRadius, _this3.spec.startAngle, _this3.spec.endAngle, _this3.spec.clockwise, _this3.spec.rotation);
+
+    var path = new THREE.Path(curve.getPoints(spec.points));
+    var geometry = path.createPointsGeometry(spec.points);
+    return _ret3 = new THREE.Line(geometry, material), babelHelpers.possibleConstructorReturn(_this3, _ret3);
+  }
+
+  return Arc;
+}(Objects);
 
 // * ***********************************************************************
 // *
 // *  DRAWING CLASS
 // *
-// *  Here we will create some pretty things
+// *  Here we will create some pretty things.
+// *  Note that all objects imported from objects.js will
+// *  have spec attributes converted to screen percentage
+// *  positions/lengths going from (0,0) bottom left to
+// *  (100,100) top right
 // *
 // *************************************************************************
 
@@ -380,13 +510,24 @@ var Drawing = function () {
     babelHelpers.classCallCheck(this, Drawing);
 
     this.renderer = renderer;
-    this.test();
+    this.init();
   }
 
+  Drawing.prototype.init = function init() {
+    this.test();
+  };
+
   Drawing.prototype.test = function test() {
-    var centre = new Point(0, 0);
-    var circle = new Circle(centre, 100);
-    this.renderer.disk(circle);
+    for (var i = 0; i < 12; i++) {
+      var testSegment = new Segment({
+        outerRadius: 40,
+        innerRadius: 25,
+        width: Math.PI / 6, //in radians
+        offset: i * Math.PI / 6, //in radians
+        color: randomInt(0x612f60, 0xffffff)
+      });
+      this.renderer.add(testSegment);
+    }
   };
 
   return Drawing;
@@ -410,7 +551,14 @@ var Controller = function () {
   }
 
   Controller.prototype.init = function init() {
-    this.renderer.render();
+    var _this = this;
+
+    //this.renderer.render();
+    //This will use GSAP rAF instead of THREE.js
+    //also remove request animation frame from render function!
+    TweenMax.ticker.addEventListener('tick', function () {
+      return _this.renderer.render();
+    });
   };
 
   Controller.prototype.onResize = function onResize() {};
@@ -419,13 +567,13 @@ var Controller = function () {
 
 
   Controller.prototype.saveImageButtons = function saveImageButtons() {
-    var _this = this;
+    var _this2 = this;
 
     document.querySelector('#save-image').onclick = function () {
-      return _this.render.saveImage();
+      return _this2.render.saveImage();
     };
     document.querySelector('#download-image').onclick = function () {
-      return _this.render.downloadImage();
+      return _this2.render.downloadImage();
     };
   };
 

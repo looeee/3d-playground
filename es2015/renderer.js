@@ -1,5 +1,6 @@
 //import * as E from './universal/mathFunctions';
 //import { Point, Circle } from './universal/universalElements';
+
 // * ***********************************************************************
 // *
 // *  RENDERER CLASS
@@ -12,6 +13,11 @@ export class Renderer {
     this.initCamera();
     this.initRenderer(renderElem);
     this.showStats();
+    this.resize();
+  }
+
+  add(mesh) {
+    this.scene.add(mesh);
   }
 
   reset() {
@@ -21,6 +27,21 @@ export class Renderer {
     this.setRenderer();
   }
 
+  resize() {
+    window.addEventListener(
+      'resize',
+      () => {
+        //this.clearScene();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        //this.camera.aspect	= window.innerWidth / window.innerHeight;
+        this.setCamera();
+        //this.camera.updateProjectionMatrix();
+      },
+      false
+    );
+  }
+
+  //clear all meshes from the scene, but preserve camera/renderer
   clearScene() {
     for (let i = this.scene.children.length - 1; i >= 0; i--) {
       const object = this.scene.children[i];
@@ -68,30 +89,6 @@ export class Renderer {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  disk(circle, color) {
-    if (color === undefined) color = 0xffffff;
-    const geometry = new THREE.CircleGeometry(circle.radius, 100, 0, 2 * Math.PI);
-    const material = new THREE.MeshBasicMaterial({ color });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.x = circle.centre.x;
-    mesh.position.y = circle.centre.y;
-
-    this.scene.add(mesh);
-  }
-
-  //NOTE: some polygons are inverted due to vertex order,
-  //solved this by making material doubles sided
-  createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
-    if (wireframe === undefined) wireframe = false;
-    if (color === undefined) color = 0xffffff;
-
-    if (!this.pattern) {
-      this.createPattern(color, textures, wireframe, elem);
-    }
-    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
-  }
-
   //render to image elem
   renderToImageElem(elem) {
     this.renderer.render(this.scene, this.camera);
@@ -134,13 +131,18 @@ export class Renderer {
   }
 
   render() {
-    window.requestAnimationFrame(() => this.render());
+    //window.requestAnimationFrame(() => this.render());
     if (this.stats) this.stats.update();
     this.renderer.render(this.scene, this.camera);
   }
 }
 
 /* UNUSED FUNCTIONS
+  createMesh(geometry, color, textures, materialIndex, wireframe, elem) {
+    if (wireframe === undefined) wireframe = false;
+    if (color === undefined) color = 0xffffff;
+    return new THREE.Mesh(geometry, this.pattern.materials[materialIndex]);
+  }
 
 
   segment(circle, startAngle, endAngle, color) {

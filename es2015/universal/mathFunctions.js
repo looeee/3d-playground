@@ -12,8 +12,8 @@ from './universalElements';
 //apply to fixed with default value of 10 and return as a float
 export const toFixed = (number, places = 10) => parseFloat(number.toFixed(places));
 
-export const distance = (point1, point2) =>
-  Math.sqrt(Math.pow((point2.x - point1.x), 2) + Math.pow((point2.y - point1.y), 2));
+export const distance = (x1, y1, x2, y2) =>
+  Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
 
 //does the line connecting p1, p2 go through the point (0,0)?
 export const throughOrigin = (point1, point2) => {
