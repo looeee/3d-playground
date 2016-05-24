@@ -74,5 +74,14 @@ button.selected {
   width: 100%;
   height: 100%; }
 
+#centreCircle {
+  position: absolute;
+  left: 25%;
+  top: 25%;
+  background-color: white; }
+
+.circle {
+  border-radius: 50%; }
+
 .hide {
   display: none !important; }

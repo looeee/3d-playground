@@ -67,7 +67,7 @@ var Renderer = function () {
     var _this = this;
 
     window.addEventListener('resize', function () {
-      //this.clearScene();
+      _this.clearScene();
       _this.renderer.setSize(window.innerWidth, window.innerHeight);
       //this.camera.aspect	= window.innerWidth / window.innerHeight;
       _this.setCamera();
@@ -176,7 +176,11 @@ var Renderer = function () {
   };
 
   Renderer.prototype.render = function render() {
-    //window.requestAnimationFrame(() => this.render());
+    var _this2 = this;
+
+    window.requestAnimationFrame(function () {
+      return _this2.render();
+    });
     if (this.stats) this.stats.update();
     this.renderer.render(this.scene, this.camera);
   };
@@ -310,9 +314,6 @@ var randomInt = function (min, max) {
 //(0,0) bottom left to (100,100) top right screen coords
 var xPercent = window.innerWidth / 100;
 var yPercent = window.innerHeight / 100;
-var xCoord = function (x) {
-  return x < 50 ? (-50 + x) * xPercent : (x - 50) * xPercent;
-};
 //Lengths are calculated from a percentage of screen width
 //or height depending on which is smaller. This means that
 //objects assigned a length of 100 (or circles radius 50)
@@ -327,41 +328,12 @@ var length = function (len) {
 // *
 // *************************************************************************
 
-var Objects = function () {
-  function Objects(spec) {
-    babelHelpers.classCallCheck(this, Objects);
+var Objects = function Objects(spec) {
+  babelHelpers.classCallCheck(this, Objects);
 
-    spec.color = spec.color || 0xffffff;
-    this.spec = spec;
-    this.setPosition();
-  }
-
-  Objects.prototype.setPosition = function setPosition() {
-    if (this.spec.x) this.spec.x = xCoord(this.spec.x);
-    if (this.spec.y) this.spec.y = xCoord(this.spec.y);
-  };
-
-  Objects.prototype.createMeshMaterial = function createMeshMaterial() {
-    return new THREE.MeshBasicMaterial({
-      color: this.spec.color
-    });
-  };
-
-  Objects.prototype.createLineMaterial = function createLineMaterial() {
-    return new THREE.LineBasicMaterial({
-      color: this.spec.color
-    });
-  };
-
-  Objects.prototype.createMesh = function createMesh(x, y, geometry, material) {
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.x = x;
-    mesh.position.y = y;
-    return mesh;
-  };
-
-  return Objects;
-}();
+  spec.color = spec.color || 0xffffff;
+  this.spec = spec;
+};
 
 // * ***********************************************************************
 // *
@@ -388,7 +360,6 @@ var Segment = function (_Objects) {
 
     var _this = babelHelpers.possibleConstructorReturn(this, _Objects.call(this, spec));
 
-    _this.spec = spec;
     _this.setup();
     return _ret = new THREE.Mesh(_this.geometry, new THREE.MeshBasicMaterial({ color: _this.spec.color })), babelHelpers.possibleConstructorReturn(_this, _ret);
   }
@@ -511,10 +482,19 @@ var Drawing = function () {
 
     this.renderer = renderer;
     this.init();
+    this.resize();
   }
 
   Drawing.prototype.init = function init() {
     this.test();
+  };
+
+  Drawing.prototype.resize = function resize() {
+    var _this = this;
+
+    window.addEventListener('resize', function () {
+      _this.init();
+    }, false);
   };
 
   Drawing.prototype.test = function test() {
@@ -535,6 +515,37 @@ var Drawing = function () {
 
 // * ***********************************************************************
 // *
+// *  HTML CLASSES
+// *
+// *  Any HTML controlling classes go here
+// *
+// *************************************************************************
+
+// * ***********************************************************************
+// *
+// *  CENTRECIRCLE CLASS
+// *
+// *  This controls the centre circle layout
+// *
+// *************************************************************************
+var CentreCircle = function () {
+  function CentreCircle() {
+    babelHelpers.classCallCheck(this, CentreCircle);
+
+    this.elem = document.querySelector('#centreCircle');
+    this.layout();
+  }
+
+  CentreCircle.prototype.layout = function layout() {
+    this.elem.style.width = length(50) + 'px';
+    this.elem.style.height = length(50) + 'px';
+  };
+
+  return CentreCircle;
+}();
+
+// * ***********************************************************************
+// *
 // *  CONTROLLER CLASS
 // *
 // *************************************************************************
@@ -544,36 +555,30 @@ var Controller = function () {
 
     this.layout = new LayoutController();
     this.renderer = new Renderer();
-
-    //document.querySelector('#canvas') //NOT WORKING!!
+    this.centreCircle = new CentreCircle();
     this.drawing = new Drawing(this.renderer);
     this.init();
   }
 
   Controller.prototype.init = function init() {
-    var _this = this;
+    this.renderer.render();
 
-    //this.renderer.render();
     //This will use GSAP rAF instead of THREE.js
     //also remove request animation frame from render function!
-    TweenMax.ticker.addEventListener('tick', function () {
-      return _this.renderer.render();
-    });
+    //TweenMax.ticker.addEventListener('tick', () => this.renderer.render());
   };
-
-  Controller.prototype.onResize = function onResize() {};
 
   //to use this add buttons with the classes below
 
 
   Controller.prototype.saveImageButtons = function saveImageButtons() {
-    var _this2 = this;
+    var _this = this;
 
     document.querySelector('#save-image').onclick = function () {
-      return _this2.render.saveImage();
+      return _this.render.saveImage();
     };
     document.querySelector('#download-image').onclick = function () {
-      return _this2.render.downloadImage();
+      return _this.render.downloadImage();
     };
   };
 
@@ -598,5 +603,5 @@ window.onload = function () {
 };
 
 window.onresize = function () {
-  controller.onResize();
+  //controller.onResize();
 };

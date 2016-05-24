@@ -11,6 +11,11 @@ import {
   Drawing,
 }
 from './drawing';
+
+import {
+  CentreCircle,
+}
+from './HTML';
 // * ***********************************************************************
 // *
 // *  CONTROLLER CLASS
@@ -19,22 +24,20 @@ from './drawing';
 export class Controller {
   constructor() {
     this.layout = new Layout();
-    this.renderer = new Renderer(
-      //document.querySelector('#canvas') //NOT WORKING!!
-    );
+    this.renderer = new Renderer();
+    this.centreCircle = new CentreCircle();
     this.drawing = new Drawing(this.renderer);
     this.init();
   }
 
   init() {
-    //this.renderer.render();
+    this.renderer.render();
+
     //This will use GSAP rAF instead of THREE.js
     //also remove request animation frame from render function!
-    TweenMax.ticker.addEventListener('tick', () => this.renderer.render());
+    //TweenMax.ticker.addEventListener('tick', () => this.renderer.render());
   }
 
-  onResize() {
-  }
 
   //to use this add buttons with the classes below
   saveImageButtons() {

@@ -20,5 +20,5 @@ window.onload = () => {
 };
 
 window.onresize = () => {
-  controller.onResize();
+  //controller.onResize();
 };

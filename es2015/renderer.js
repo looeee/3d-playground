@@ -31,7 +31,7 @@ export class Renderer {
     window.addEventListener(
       'resize',
       () => {
-        //this.clearScene();
+        this.clearScene();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         //this.camera.aspect	= window.innerWidth / window.innerHeight;
         this.setCamera();
@@ -131,7 +131,7 @@ export class Renderer {
   }
 
   render() {
-    //window.requestAnimationFrame(() => this.render());
+    window.requestAnimationFrame(() => this.render());
     if (this.stats) this.stats.update();
     this.renderer.render(this.scene, this.camera);
   }

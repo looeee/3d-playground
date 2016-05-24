@@ -4,10 +4,6 @@ import {
   length,
 }
 from './utility';
-import {
-  distance
-}
-from './universal/mathFunctions';
 // * ***********************************************************************
 // *
 // *  OBJECTS SUPERCLASS
@@ -17,31 +13,6 @@ class Objects {
   constructor(spec) {
     spec.color = spec.color || 0xffffff;
     this.spec = spec;
-    this.setPosition();
-  }
-
-  setPosition() {
-    if (this.spec.x) this.spec.x = xCoord(this.spec.x);
-    if (this.spec.y) this.spec.y = xCoord(this.spec.y);
-  }
-
-  createMeshMaterial() {
-    return new THREE.MeshBasicMaterial({
-      color: this.spec.color,
-    });
-  }
-
-  createLineMaterial() {
-    return new THREE.LineBasicMaterial({
-      color: this.spec.color,
-    });
-  }
-
-  createMesh(x, y, geometry, material) {
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.x = x;
-    mesh.position.y = y;
-    return mesh;
   }
 }
 
@@ -61,7 +32,6 @@ class Objects {
 export class Segment extends Objects {
   constructor(spec) {
     super(spec);
-    this.spec = spec;
     this.setup();
     return new THREE.Mesh(this.geometry, new THREE.MeshBasicMaterial({ color: this.spec.color }));
   }

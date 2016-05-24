@@ -23,10 +23,21 @@ export class Drawing {
   constructor(renderer) {
     this.renderer = renderer;
     this.init();
+    this.resize();
   }
 
   init() {
     this.test();
+  }
+
+  resize() {
+    window.addEventListener(
+      'resize',
+      () => {
+        this.init();
+      },
+      false
+    );
   }
 
   test() {
