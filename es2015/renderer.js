@@ -14,6 +14,7 @@ export class Renderer {
     this.initRenderer(renderElem);
     this.showStats();
     this.resize();
+    this.setupDOMEvents();
   }
 
   add(mesh) {
@@ -25,6 +26,11 @@ export class Renderer {
     this.pattern = null; //reset materials;
     this.setCamera();
     this.setRenderer();
+  }
+
+  //https://github.com/jeromeetienne/threex.domevents
+  setupDOMEvents() {
+    this.domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
   }
 
   resize() {
@@ -73,7 +79,7 @@ export class Renderer {
   initRenderer(renderElem) {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
-      preserveDrawingBuffer: true,
+      //preserveDrawingBuffer: false,
     });
     if (renderElem) {
       this.renderer.domElement = renderElem;

@@ -14,6 +14,7 @@ from './drawing';
 
 import {
   CentreCircle,
+  CentreCircleContents,
 }
 from './HTML';
 // * ***********************************************************************
@@ -26,6 +27,7 @@ export class Controller {
     this.layout = new Layout();
     this.renderer = new Renderer();
     this.centreCircle = new CentreCircle();
+    this.CentreCircleContents = new CentreCircleContents();
     this.drawing = new Drawing(this.renderer);
     this.init();
   }
@@ -36,6 +38,8 @@ export class Controller {
     //This will use GSAP rAF instead of THREE.js
     //also remove request animation frame from render function!
     //TweenMax.ticker.addEventListener('tick', () => this.renderer.render());
+
+    this.CentreCircleContents.switchContents('./html_components/centre_circle/test.html');
   }
 
 

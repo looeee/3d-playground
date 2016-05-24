@@ -41,6 +41,25 @@ export class CentreCircle {
 // *************************************************************************
 export class CentreCircleContents {
   constructor() {
-
+    this.elem = document.querySelector('#centreCircleContents');
   }
+
+  switchContents(newContentsFile) {
+    //don't load the same contents twice
+    if (this.currentContentsFile === newContentsFile) return;
+
+    this.currentContentsFile = newContentsFile;
+    // url (required), options (optional)
+    fetch(newContentsFile, {
+      method: 'get',
+    }).then((response) => {
+      return response.text();
+    }).then((html) => {
+      this.elem.innerHTML = html;
+    })
+    .catch((err) => {
+      console.error(`Failed to load ${newContentsFile}`);
+    });
+  }
+
 }

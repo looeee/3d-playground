@@ -41,6 +41,11 @@ export class Drawing {
   }
 
   test() {
+    const callback = (elem) => {
+      elem.intersect.object.material.color = new THREE.Color(randomInt(0x612f60, 0xffffff));
+      elem.intersect.object.material.needsUpdate = true;
+    };
+
     for (let i = 0; i < 12; i++) {
       const testSegment = new Segment({
         outerRadius: 40,
@@ -50,6 +55,13 @@ export class Drawing {
         color: randomInt(0x612f60, 0xffffff),
       });
       this.renderer.add(testSegment);
+
+      this.renderer.domEvents.addEventListener(
+        testSegment,
+        'mouseover',
+        callback,
+        false
+       );
     }
   }
 }

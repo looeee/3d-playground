@@ -50,6 +50,7 @@ var Renderer = function () {
     this.initRenderer(renderElem);
     this.showStats();
     this.resize();
+    this.setupDOMEvents();
   }
 
   Renderer.prototype.add = function add(mesh) {
@@ -61,6 +62,13 @@ var Renderer = function () {
     this.pattern = null; //reset materials;
     this.setCamera();
     this.setRenderer();
+  };
+
+  //https://github.com/jeromeetienne/threex.domevents
+
+
+  Renderer.prototype.setupDOMEvents = function setupDOMEvents() {
+    this.domEvents = new THREEx.DomEvents(this.camera, this.renderer.domElement);
   };
 
   Renderer.prototype.resize = function resize() {
@@ -108,9 +116,9 @@ var Renderer = function () {
 
   Renderer.prototype.initRenderer = function initRenderer(renderElem) {
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      preserveDrawingBuffer: true
+      antialias: true
     });
+    //preserveDrawingBuffer: false,
     if (renderElem) {
       this.renderer.domElement = renderElem;
     } else {
@@ -498,6 +506,11 @@ var Drawing = function () {
   };
 
   Drawing.prototype.test = function test() {
+    var callback = function (elem) {
+      elem.intersect.object.material.color = new THREE.Color(randomInt(0x612f60, 0xffffff));
+      elem.intersect.object.material.needsUpdate = true;
+    };
+
     for (var i = 0; i < 12; i++) {
       var testSegment = new Segment({
         outerRadius: 40,
@@ -507,6 +520,8 @@ var Drawing = function () {
         color: randomInt(0x612f60, 0xffffff)
       });
       this.renderer.add(testSegment);
+
+      this.renderer.domEvents.addEventListener(testSegment, 'mouseover', callback, false);
     }
   };
 
@@ -546,6 +561,42 @@ var CentreCircle = function () {
 
 // * ***********************************************************************
 // *
+// *  CENTRECIRCLECONTENTS CLASS
+// *
+// *  This controls the centre circle contents
+// *
+// *************************************************************************
+var CentreCircleContents = function () {
+  function CentreCircleContents() {
+    babelHelpers.classCallCheck(this, CentreCircleContents);
+
+    this.elem = document.querySelector('#centreCircleContents');
+  }
+
+  CentreCircleContents.prototype.switchContents = function switchContents(newContentsFile) {
+    var _this = this;
+
+    //don't load the same contents twice
+    if (this.currentContentsFile === newContentsFile) return;
+
+    this.currentContentsFile = newContentsFile;
+    // url (required), options (optional)
+    fetch(newContentsFile, {
+      method: 'get'
+    }).then(function (response) {
+      return response.text();
+    }).then(function (html) {
+      _this.elem.innerHTML = html;
+    }).catch(function (err) {
+      console.error('Failed to load ' + newContentsFile);
+    });
+  };
+
+  return CentreCircleContents;
+}();
+
+// * ***********************************************************************
+// *
 // *  CONTROLLER CLASS
 // *
 // *************************************************************************
@@ -556,6 +607,7 @@ var Controller = function () {
     this.layout = new LayoutController();
     this.renderer = new Renderer();
     this.centreCircle = new CentreCircle();
+    this.CentreCircleContents = new CentreCircleContents();
     this.drawing = new Drawing(this.renderer);
     this.init();
   }
@@ -566,6 +618,8 @@ var Controller = function () {
     //This will use GSAP rAF instead of THREE.js
     //also remove request animation frame from render function!
     //TweenMax.ticker.addEventListener('tick', () => this.renderer.render());
+
+    this.CentreCircleContents.switchContents('./html_components/centre_circle/test.html');
   };
 
   //to use this add buttons with the classes below
