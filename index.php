@@ -38,6 +38,7 @@
   <script src="scripts/vendor/three/js/postprocessing/TexturePass.js"></script>
   <script src="scripts/vendor/three/js/postprocessing/ShaderPass.js"></script>
   <script src="scripts/vendor/three/js/postprocessing/MaskPass.js"></script>
+  <script src="scripts/vendor/three/js/postprocessing/ManualMSAARenderPass.js"></script>
 
   <script src="scripts/vendor/threex.domevents.js"></script>
   <script src="scripts/vendor/three/js/Detector.js"></script>

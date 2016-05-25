@@ -1,6 +1,6 @@
 import {
   randomFloat,
-  randomInt
+  randomInt,
 }
 from './universal/mathFunctions';
 //import { Point, Circle } from './universal/universalElements';

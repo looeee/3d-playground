@@ -21,13 +21,22 @@ class Postprocessing {
     this.effects();
 
     this.composer.addPass(copyPass);
+
+    //this.antialias();
     return this.composer;
   }
 
+  antialias() {
+    const msaaRenderPass = new THREE.ManualMSAARenderPass(this.scene, this.camera);
+    msaaRenderPass.sampleLevel = 4;
+    //msaaRenderPass.unbiased = true;
+    this.composer.addPass(msaaRenderPass);
+  }
+
   effects() {
-    const testPass = new THREE.ShaderPass( THREE.ColorifyShader );
-		//testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
-    this.composer.addPass(testPass);
+    //const testPass = new THREE.ShaderPass(THREE.ColorifyShader);
+    //testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
+    //this.composer.addPass(testPass);
   }
 }
 
