@@ -46,6 +46,7 @@ export class Drawing {
   }
 
   addBackground() {
+    const body = document.querySelector('body');
     const background = createBackground({
       geometry: new THREE.PlaneGeometry(2, 2, 1),
       colors: ['#fff', '#283844'],
@@ -58,23 +59,22 @@ export class Drawing {
       offset: [1, 1],
       aspectCorrection: false,
     });
-    window.addEventListener('mousemove', (e) => {
-      const x = e.pageX;
-      const y = e.pageY;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
 
-      const offsetX = (x === 0) ? 0 : x / w;
-      const offsetY = (y === 0) ? 0.999 : 1 - y / h;
+    body.addEventListener('mousemove', (e) => {
+      const offsetX = (e.pageX === 0) ? 0 : e.pageX / window.innerWidth;
+      let offsetY = (e.pageY === 0) ? 0.999 : 1 - e.pageY / window.innerHeight;
 
-      console.log(offsetX, offsetY);
+      //make the line well defined when moving the mouse off the top of the screen
+      offsetY = (offsetY > 0.97) ? 0.999 : offsetY;
+      console.log(offsetY);
       background.style({
         offset: [offsetX, offsetY],
         smooth: [1, offsetY],
-        //grainScale: offsetY,
+        //  grainScale: (offsetY === 0.999) ? 1 : 0.001,
         noiseAlpha: (offsetX > 0.4) ? offsetX : 0.4,
       });
     });
+
     this.renderer.add(background);
   }
 

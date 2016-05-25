@@ -78,7 +78,7 @@ export class Segment extends Objects {
       this.spec.innerRadius, //radius
       endAngle,
       this.spec.offset,
-      true //clockwise
+      true //clockwisecd /v ww  h
     );
   }
 
