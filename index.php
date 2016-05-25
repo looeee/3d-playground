@@ -48,7 +48,7 @@
 
 <body>
 
-  <div id="centreCircle" class="circle">
+  <div id="centreCircle" class="circle centred">
     <div id="centreCircleContents" class="wrapcontent"></div>
   </div>
 

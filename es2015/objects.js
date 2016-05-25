@@ -15,6 +15,12 @@ class Objects {
     spec.color = spec.color || 0xffffff;
     this.spec = spec;
   }
+
+  createMesh(geometry, material) {
+    const mesh = new THREE.Mesh(geometry, material);
+    //mesh.position.z = 2;
+    return mesh;
+  }
 }
 
 // * ***********************************************************************
@@ -35,7 +41,7 @@ export class Segment extends Objects {
   constructor(spec) {
     super(spec);
     this.setup();
-    return new THREE.Mesh(this.geometry, new THREE.MeshBasicMaterial({ color: this.spec.color }));
+    return this.createMesh(this.geometry, new THREE.MeshBasicMaterial({ color: this.spec.color }));
   }
 
   setup() {

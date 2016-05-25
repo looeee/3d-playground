@@ -34,8 +34,8 @@ class Postprocessing {
   }
 
   effects() {
-    //const testPass = new THREE.ShaderPass(THREE.ColorifyShader);
-    //testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
+    const testPass = new THREE.ShaderPass(THREE.ColorifyShader);
+    testPass.uniforms[ "color" ].value = new THREE.Color( 0xff0000 );
     //this.composer.addPass(testPass);
   }
 }
@@ -56,8 +56,6 @@ export class Renderer {
     this.showStats();
     this.resize();
     this.setupDOMEvents();
-
-    console.log(this.postRenderer);
   }
 
   add(mesh) {
@@ -113,8 +111,8 @@ export class Renderer {
     this.camera.right = window.innerWidth / 2;
     this.camera.top = window.innerHeight / 2;
     this.camera.bottom = -window.innerHeight / 2;
-    this.camera.near = -2;
-    this.camera.far = 1;
+    this.camera.near = -10;
+    this.camera.far = 10;
     this.camera.frustumCulled = false;
     this.camera.updateProjectionMatrix();
   }

@@ -1,3 +1,4 @@
+const createBackground = require('three-vignette-background');
 import {
   randomFloat,
   randomInt,
@@ -30,7 +31,8 @@ export class Drawing {
   }
 
   init() {
-    this.test();
+    this.addBackground();
+    //this.test();
   }
 
   resize() {
@@ -41,6 +43,39 @@ export class Drawing {
       },
       false
     );
+  }
+
+  addBackground() {
+    const background = createBackground({
+      geometry: new THREE.PlaneGeometry(2, 2, 1),
+      colors: ['#fff', '#283844'],
+      aspect: 1,
+      grainScale: 0.001,
+      grainTime: 0,
+      noiseAlpha: 0.4,
+      smooth: [1, 0.999],
+      scale: [1, 1],
+      offset: [1, 1],
+      aspectCorrection: false,
+    });
+    window.addEventListener('mousemove', (e) => {
+      const x = e.pageX;
+      const y = e.pageY;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      const offsetX = (x === 0) ? 0 : x / w;
+      const offsetY = (y === 0) ? 0.999 : 1 - y / h;
+
+      console.log(offsetX, offsetY);
+      background.style({
+        offset: [offsetX, offsetY],
+        smooth: [1, offsetY],
+        //grainScale: offsetY,
+        noiseAlpha: (offsetX > 0.4) ? offsetX : 0.4,
+      });
+    });
+    this.renderer.add(background);
   }
 
   test() {
